@@ -64,6 +64,22 @@
     "is_synthetic": true
   },
   {
+    "id": "bham-fallen-tree",
+    "jurisdiction_type": "city",
+    "jurisdiction_name": "Birmingham city",
+    "service_type": "fallen_tree_debris",
+    "office_name": "Birmingham Public Works — Street & Sanitation",
+    "phone": "205-555-0101",
+    "email": null,
+    "form_url": null,
+    "what_to_say": "Report a fallen tree or storm debris blocking the right-of-way at <address>.",
+    "source_url": "https://example.invalid/placeholder-pending-verification",
+    "checked_on": "2026-08-28",
+    "confidence": "medium",
+    "notes": "A tree that fell from private property may be the property owner's responsibility even when it lands in the right-of-way — confirm when you call.",
+    "is_synthetic": true
+  },
+  {
     "id": "bham-vehicle",
     "jurisdiction_type": "city",
     "jurisdiction_name": "Birmingham city",
@@ -157,6 +173,22 @@
     "checked_on": "2026-08-28",
     "confidence": "medium",
     "notes": "City and county maintenance boundaries are unclear on some annexed streets.",
+    "is_synthetic": true
+  },
+  {
+    "id": "homewood-fallen-tree",
+    "jurisdiction_type": "city",
+    "jurisdiction_name": "Homewood city",
+    "service_type": "fallen_tree_debris",
+    "office_name": "Homewood Public Works",
+    "phone": "205-555-0110",
+    "email": null,
+    "form_url": null,
+    "what_to_say": "Report a fallen tree or storm debris blocking the right-of-way at <address>.",
+    "source_url": "https://example.invalid/placeholder-pending-verification",
+    "checked_on": "2026-08-28",
+    "confidence": "medium",
+    "notes": "Debris from private property may be the owner's responsibility to clear — confirm when you call.",
     "is_synthetic": true
   },
   {
@@ -269,6 +301,22 @@
     "checked_on": "2026-08-28",
     "confidence": "low",
     "notes": "Conflicting published information about city vs county sidewalk maintenance on annexed streets.",
+    "is_synthetic": true
+  },
+  {
+    "id": "jeffco-fallen-tree",
+    "jurisdiction_type": "county",
+    "jurisdiction_name": "Jefferson County",
+    "service_type": "fallen_tree_debris",
+    "office_name": "Jefferson County Roads and Transportation",
+    "phone": "205-555-0140",
+    "email": null,
+    "form_url": null,
+    "what_to_say": "Ask whether a fallen tree blocking the roadway at <address> is on a county-maintained road.",
+    "source_url": "https://example.invalid/placeholder-pending-verification",
+    "checked_on": "2026-08-28",
+    "confidence": "medium",
+    "notes": "County crews clear county roads; a tree on a city street inside a municipality is that city's responsibility.",
     "is_synthetic": true
   },
   {

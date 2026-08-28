@@ -47,6 +47,11 @@ const KEYWORD_RULES: Array<[ServiceType, RegExp]> = [
   ['traffic_signal', /\b(traffic (light|signal)|crosswalk|walk signal|stop ?light|signal (is )?out)\b/i],
   ['street_light', /\b(street ?light|lamp ?post|light pole|dark street)\b/i],
   ['abandoned_vehicle', /\b(abandoned (car|vehicle)|junk car|derelict vehicle|car has been parked)\b/i],
+  // Must precede illegal_dumping: that rule also matches the bare word "debris".
+  [
+    'fallen_tree_debris',
+    /\b(fallen tree|tree (is )?down|downed tree|tree (limb|branch)|limb|branches? (down|blocking|fell)|storm debris|tree (is )?(blocking|across))\b/i,
+  ],
   ['illegal_dumping', /\b(dumping|dumped|trash pile|debris|litter|mattress|tires? (dumped|left))\b/i],
   ['sidewalk', /\b(side ?walk|curb|curb ramp|walkway)\b/i],
   ['pothole_street', /\b(pot ?hole|road surface|pavement|street (is )?(broken|crumbling)|asphalt)\b/i],

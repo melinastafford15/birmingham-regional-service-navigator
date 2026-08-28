@@ -4,23 +4,24 @@ Challenge 2: Make Regional Services Easier to Navigate · August 28, 2026
 
 ## In one line
 
-A resident texts a problem and a location; we text back the right phone number,
-email, or online form — for the state, county, or city office that actually
-handles it.
+A resident describes a problem in web chat and picks a synthetic demo location; we
+return the right phone number, email, or online form — for the county or city office
+that actually handles it.
 
 ## User, moment, outcome
 
 - **User:** a resident of Greater Birmingham
 - **Moment:** "Who do I call about this?"
-- **Outcome:** a working contact channel and what to say, in one message
+- **Outcome:** a working contact channel and what to say, in one handoff card
 
 ## How it works
 
-1. Resident texts a plain-language problem plus a location.
+1. Resident describes a plain-language problem in web chat and selects a synthetic
+   demo location.
 2. We classify the problem into a service type and resolve the location to a
    jurisdiction.
-3. We look up the responsible office in a cited knowledge base and text back its
-   contact channel.
+3. We look up the responsible office in a cited knowledge base and return its contact
+   channel with the evidence behind it.
 
 ## What comes back
 
@@ -38,9 +39,16 @@ places where ownership between jurisdictions is genuinely undefined.
 
 ## Scope
 
-One service domain — **the public right-of-way and adjacent infrastructure**
-(streets, sidewalks, storm drains, signals, dumping) — across at least three
-jurisdictions, plus the county and state layers.
+One service family — **public right-of-way maintenance** — across exactly three
+jurisdictions.
+
+**Issue subtypes (4):** `pothole-road-damage` · `sidewalk-damage` · `blocked-drainage` ·
+`fallen-tree-debris`
+
+**Jurisdictions (3):** City of Birmingham · Jefferson County · City of Homewood
+
+Anything outside that returns "not covered" rather than a guess. Scope is frozen for
+submission; widening it is a product decision, not an implementation one.
 
 ## Out of scope
 
@@ -60,7 +68,7 @@ jurisdictions, plus the county and state layers.
 | Reads as an official responsibility determination | Contacts come only from cited public sources; every reply links its source and is framed as guidance |
 | Contact information goes stale | Every knowledge-base entry carries a source URL and a `checked_on` date |
 | The model invents an office or a phone number | The model classifies the problem only. Contact details are looked up from the cited knowledge base; a miss returns "unknown," never a generated number |
-| SMS provisioning eats the build window | Web chat ships first as the reviewable artifact; SMS is added only once that path works |
+| Channel work eats the build window | Web chat is the only interface in the frozen MVP. SMS, voice, and every other channel are roadmap items and are not built before submission |
 
 ## Human review point
 

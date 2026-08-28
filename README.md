@@ -65,6 +65,9 @@ This is not a knowledge gap. It is a **knowledge leak**.
 | **Jurisdictions** | City of Birmingham (`birmingham-al`) · Jefferson County (`jefferson-county-al`) · City of Homewood (`homewood-al`) |
 | **Locations** | `BHM-DEMO-01` · `BHM-DEMO-02` · `BHM-DEMO-03` — synthetic only |
 
+All four subtypes have office records in all three jurisdictions. Anything outside this
+grid returns `not_covered` and is written to the gap register, never guessed.
+
 Scope is frozen for submission. Changes require sign-off from the product lead.
 
 ---
@@ -100,6 +103,7 @@ structurally impossible, not merely unlikely.
 |---|---|---|
 | [lib/contracts.ts](lib/contracts.ts) | **Frozen integration contracts.** Request, evidence bundle, handoff response, subtypes, sources, contacts, synthetic locations, mock. | Melina |
 | [lib/types.ts](lib/types.ts) | Internal backend shapes for the current routing implementation | Backend |
+| [lib/handoff.ts](lib/handoff.ts) | The frozen-contract boundary. The only place internals are translated to the contract. | Melina |
 | [lib/classify.ts](lib/classify.ts) | Problem → subtype. Emergency short-circuit; keyword fallback when no API key | Upendar |
 | [lib/repository.ts](lib/repository.ts) | `OfficeRepository` interface — the database swap point | Andrew |
 | [lib/repositories/json-repository.ts](lib/repositories/json-repository.ts) | Fixture-backed implementation shipping today | Andrew |
@@ -204,6 +208,7 @@ The demo does not depend on the network or on Claude being reachable.
 | Evidence lookup finds nothing | `not_covered` — says so plainly, guesses nothing, writes a gap-register entry. |
 | Ambiguous ownership | Both claims are named, confidence drops, and a gap entry is written. |
 | Emergency language | 911 short-circuit, before any dependency is touched. |
+| Real address submitted | Refused with HTTP 400. The MVP accepts only the three synthetic demo locations. |
 
 The rule: **degrade to a narrower honest answer, never to a confident wrong one.**
 
@@ -213,12 +218,12 @@ The rule: **degrade to a narrower honest answer, never to a confident wrong one.
 
 All three locations are fabricated. No such addresses exist.
 
-> **Current state, stated plainly:** these three cases are the frozen demo set and are
-> defined in code (`SYNTHETIC_LOCATIONS` in [lib/contracts.ts](lib/contracts.ts)). They are
-> **not yet runnable end to end** — `app/page.tsx` is still framework boilerplate and the
-> API still speaks the older request shape. Case 1 has a complete frozen-shape response
-> available today as `MOCK_BIRMINGHAM_SIDEWALK_RESPONSE`, which the UI builds against.
-> Progress is tracked in [docs/integration-checklist.md](docs/integration-checklist.md).
+> **Current state, stated plainly:** all three cases **work today against the API** and
+> were verified with no `ANTHROPIC_API_KEY` set, on the deterministic fallback path. They
+> are **not yet runnable in a browser** — `app/page.tsx` is still framework boilerplate.
+> Run them with the `curl` commands in [docs/API.md](docs/API.md), or build against
+> `MOCK_BIRMINGHAM_SIDEWALK_RESPONSE`. Tracked in
+> [docs/integration-checklist.md](docs/integration-checklist.md).
 
 ### 1. `BHM-DEMO-01` — Birmingham sidewalk
 
@@ -273,9 +278,9 @@ Stated plainly, because an honest demo is the goal.
 6. **Classification is not evaluated.** There is no scored accuracy number yet, and we do
    not claim one.
 7. **No live status.** No queue position, no office hours, no promise anyone is open.
-8. **Existing backend internals still use an older shape.** `lib/types.ts` and
-   `app/api/route-request` predate the frozen contract in `lib/contracts.ts`. Reconciliation
-   is tracked in [docs/integration-checklist.md](docs/integration-checklist.md).
+8. **No browser UI yet.** The API serves the frozen contract and all three cases work,
+   but `app/page.tsx` is still framework boilerplate. This is the only thing between the
+   current state and a running demo.
 
 ---
 

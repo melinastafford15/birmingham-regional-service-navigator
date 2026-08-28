@@ -52,8 +52,8 @@ is dropped.
 
 ### `service_type` values
 
-`storm_drain` · `pothole_street` · `sidewalk` · `traffic_signal` · `street_light` ·
-`illegal_dumping` · `abandoned_vehicle` · `other`
+`storm_drain` · `pothole_street` · `sidewalk` · `fallen_tree_debris` · `traffic_signal` ·
+`street_light` · `illegal_dumping` · `abandoned_vehicle` · `other`
 
 ---
 

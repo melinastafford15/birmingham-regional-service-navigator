@@ -63,8 +63,9 @@ has not reduced the friction: the effort is real, and it evaporates on contact.
 
 ## What we are building
 
-A **conversational front door** — web chat, with SMS as the pilot channel — where a
-resident describes a problem in plain language and gives a location.
+A **conversational front door** — web chat only in the frozen MVP — where a resident
+describes a problem in plain language and selects a clearly synthetic demo location.
+SMS is a roadmap item, not a deliverable.
 
 The Navigator returns a **handoff card**, not an answer:
 
@@ -75,7 +76,8 @@ The Navigator returns a **handoff card**, not an answer:
   the resident is told so rather than shielded from it
 - **What remains unknown**, stated plainly
 - The **next concrete action**: the correct office, channel, and what to say
-- A copy-ready **report packet** the resident can carry to that office
+- **What to say** — one line the resident can read aloud, so they are not re-explaining
+  the problem from scratch
 
 Uncertainty is displayed, not hidden. The card is designed to be shown to a public
 employee, who remains the person who confirms responsibility and acts.
@@ -119,7 +121,7 @@ residents are given the Navigator.
 | The tool is read as making a legal responsibility determination | Routing draws only from cited public sources, never from boundary geometry alone; the card shows its evidence and labels itself as guidance, not determination |
 | Published source information is stale or contradicts another jurisdiction | Every knowledge-base claim carries a source URL and a `checked_on` date; contradictions surface in the card as a named conflict instead of being silently resolved |
 | Synthetic test cases are mistaken for real residents or real agency records | All synthetic records carry `is_synthetic`, all fictional entities keep their "Fictional" prefix, and synthetic and real-sourced content never appear in the same claim |
-| SMS provisioning consumes build time the project cannot spare | Web chat is the deliverable artifact; SMS is built only after the web path is complete and is documented as the pilot channel regardless |
+| Channel work consumes build time the project cannot spare | Web chat is the only interface in the frozen MVP. SMS and other channels are documented as roadmap items and are not built before submission |
 | The language model invents a plausible agency that does not exist | The model classifies the problem and writes the narrative; it never selects the responsible entity. Ownership is looked up from the cited knowledge base, and a lookup that misses returns "unknown" and a gap-register entry |
 
 ## Human review point

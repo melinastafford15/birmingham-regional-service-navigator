@@ -13,6 +13,7 @@ export const SERVICE_TYPES = [
   'traffic_signal',
   'street_light',
   'illegal_dumping',
+  'fallen_tree_debris',
   'abandoned_vehicle',
   'other',
 ] as const
@@ -27,6 +28,7 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   traffic_signal: 'Traffic or crosswalk signal',
   street_light: 'Street light',
   illegal_dumping: 'Illegal dumping or debris',
+  fallen_tree_debris: 'Fallen tree or debris',
   abandoned_vehicle: 'Abandoned vehicle',
   other: 'Something else',
 }

@@ -1,132 +1,172 @@
-# API Contract — Birmingham Regional Service Navigator
+# API Contract — CivicRoute BHM
 
-**For the frontend.** This is stable. Build against it now; the backend fills in behind it.
-Import types from `lib/types.ts` rather than redefining them.
+**Frozen.** Owner: Melina Stafford. Nobody changes these shapes without her approval.
 
+Import types from [lib/contracts.ts](../lib/contracts.ts) rather than redefining them.
 Base URL: same origin. No auth.
 
 ---
 
 ## `POST /api/route-request`
 
-The only endpoint you need.
+The only endpoint the UI needs.
 
-### Request
-
-```jsonc
-{
-  "message": "the storm drain on my corner floods every time it rains",  // required
-  "location": "2850 19th St S, Homewood, AL 35209"                       // optional
-}
-```
-
-`location` may be an address, an intersection, or a place description. If it is missing
-or unresolvable, you get `status: "needs_location"` back — prompt the user and re-send.
-
-### Response
-
-Always HTTP 200 with this shape. Branch on `status`, never on HTTP code.
+### Request — `RouteRequestPayload`
 
 ```jsonc
 {
-  "status": "routed",
-  "jurisdiction": {
-    "place": "Homewood city",
-    "county": "Jefferson County",
-    "state": "Alabama",
-    "matchedAddress": "2850 19TH ST S, HOMEWOOD, AL, 35209",
-    "coordinates": { "lat": 33.4707, "lon": -86.7969 },
-    "confidence": "high",
-    "isUnincorporated": false
-  },
-  "serviceType": "storm_drain",
-  "primary": {
-    "office": "Homewood Public Works",
-    "level": "city",
-    "jurisdictionName": "Homewood city",
-    "channel": { "phone": "205-555-0100", "email": null, "formUrl": "https://…" },
-    "whatToSay": "Report a blocked storm drain at <address>, recurring during heavy rain.",
-    "source": { "url": "https://…", "checkedOn": "2026-08-28" },
-    "confidence": "high",
-    "isSynthetic": true,
-    "notes": null
-  },
-  "alternates": [],
-  "notes": ["Placeholder contact — not yet verified against a public source."],
-  "gapLogged": false,
-  "sms": "Homewood Public Works — 205-555-0100. Say: Report a blocked storm drain…",
-  "disclaimer": "Guidance only, based on published public sources. The office you contact confirms responsibility."
+  "message": "The sidewalk is broken near my location",  // required, non-empty
+  "synthetic_location_id": "BHM-DEMO-01",                // required, frozen demo set
+  "jurisdiction_hint": "birmingham-al"                   // required, frozen set
 }
 ```
 
-### The four statuses
+**There is no address field.** The MVP never accepts a real resident address. The UI offers
+a picker over the three frozen synthetic locations and sends the id.
 
-| `status` | Meaning | What to render |
+| `synthetic_location_id` | Jurisdiction | Demonstrates |
 |---|---|---|
-| `routed` | We found an office | `primary`, then `alternates` if non-empty, then `notes` |
-| `needs_location` | No location given, or it could not be resolved | Ask for a street address |
-| `not_covered` | Outside our service domain or jurisdiction set | Say so plainly; do not guess |
-| `emergency` | Life-safety language detected | 911 only. No office, no lookup ran. |
+| `BHM-DEMO-01` | `birmingham-al` | Baseline city case; responsibility may be shared with the adjoining property owner |
+| `BHM-DEMO-02` | `jefferson-county-al` | Birmingham-style mailing address that is not inside any city |
+| `BHM-DEMO-03` | `homewood-al` | A separate municipality with its own intake |
+
+`jurisdiction_hint` is **advisory**. The synthetic location table is authoritative, and the
+answering office's own jurisdiction wins — a county record routes to the county even when
+the location sits inside a city.
+
+A request failing validation returns **HTTP 400** with the specific reasons:
+
+```jsonc
+{ "error": "Invalid request",
+  "details": ["synthetic_location_id must be a synthetic id beginning with \"BHM-DEMO-\""] }
+```
+
+### Response — `RouteApiResult`
+
+HTTP 200. **Branch on `outcome` before reading any other field.**
+
+`HandoffResponse` describes a routed answer. Two real cases are not routed answers — a
+life-safety emergency, and a request we have no evidence for. Neither can be expressed by
+inventing an entity, so the result carries an `outcome` discriminator. A handoff includes
+every frozen `HandoffResponse` field unchanged; `outcome` is additive.
+
+| `outcome` | Meaning | What to render |
+|---|---|---|
+| `handoff` | We found a likely responsible entity | The full card, every field below |
+| `emergency` | Life-safety language detected | `message` only. 911. No lookup ran. |
+| `not_covered` | Outside the frozen scope, or no evidence exists | `reason`, and `conflict_or_gap` if non-null. Never guess. |
+
+#### `outcome: "handoff"`
+
+```jsonc
+{
+  "outcome": "handoff",
+  "service": "public-right-of-way-maintenance",
+  "issue_subtype": "sidewalk-damage",
+  "likely_responsible_entity": "Birmingham Department of Transportation",
+  "jurisdiction": "birmingham-al",
+  "reason": "Synthetic demo location BHM-DEMO-01 sits inside City of Birmingham, and …",
+  "confidence": "medium",
+  "conflict_or_gap": "More than one office may have a claim here (…). Start with the first…",
+  "next_action": "Call Birmingham Department of Transportation at 205-555-0102. Ask about…",
+  "official_contact": { "phone": "205-555-0102", "email": null, "form_url": null },
+  "sources": [
+    { "title": "… contact information (placeholder pending verification)",
+      "publisher": "City of Birmingham",
+      "url": "https://example.invalid/placeholder-pending-verification",
+      "last_checked": "2026-08-28" }
+  ],
+  "requires_human_confirmation": true,
+  "human_confirmation_instruction": "Call or contact the office listed above and ask them…",
+  "disclaimer": "This is a navigation aid, not a legal determination, and it does not submit a service request."
+}
+```
+
+#### `outcome: "emergency"` / `"not_covered"`
+
+```jsonc
+{ "outcome": "emergency",
+  "message": "This sounds like an emergency. Call 911 now. We did not look up a routing office.",
+  "disclaimer": "…" }
+
+{ "outcome": "not_covered",
+  "reason": "We only cover potholes and road damage, sidewalk damage, blocked drainage, and fallen trees or debris right now.",
+  "conflict_or_gap": "Logged as a coverage gap.",
+  "disclaimer": "…" }
+```
 
 ---
 
 ## Rules the UI must follow
 
-These are eligibility-gate requirements, not styling preferences.
+Eligibility-gate requirements, not styling preferences.
 
-1. **Always render `disclaimer`** on a `routed` response.
-2. **Always show `isSynthetic`** when true — a visible "example data" badge. Never present
-   a synthetic contact as a real one.
-3. **Always render `notes`** when non-empty. That is where overlaps and staleness surface.
-4. **Show `alternates` when present.** They mean two offices may both have a claim. Do not
-   silently hide them to make the answer look cleaner — the ambiguity is the point.
-5. **Never fabricate a contact.** If `primary` is null, there is no answer to show.
-6. **Show `jurisdiction.place`** even when it contradicts what the user typed. A Birmingham
-   mailing address resolving to "Mountain Brook city" is the product working, not a bug.
+1. **Render `disclaimer` verbatim** on every response. Import the string; never retype it.
+2. **Render `requires_human_confirmation` + `human_confirmation_instruction`** on every
+   handoff. The public employee who answers is the decision-maker, and the card says so.
+3. **Render `conflict_or_gap` whenever non-null.** That is where overlaps, caveats, and
+   staleness surface. Do not hide it to make the answer look cleaner — the ambiguity is
+   the point.
+4. **Render every entry in `sources`**, each with its `last_checked` date. A contact
+   without visible provenance is not usable.
+5. **Show a visible "example data" badge** whenever a source is marked as a placeholder.
+   Never present a synthetic contact as a real one.
+6. **Show `confidence`** as given. Do not round it up.
+7. **Never fabricate a contact.** If `outcome` is not `handoff`, there is no office to show.
+8. **Offer only the three frozen synthetic locations.** No free-text address input.
 
 ---
 
 ## `GET /api/gaps`
 
-The gap register — every lookup we could not resolve.
+The gap register — every lookup we could not resolve, and every genuinely contested one.
 
 ```jsonc
-{
-  "count": 3,
+{ "count": 2,
   "entries": [
-    { "serviceType": "sidewalk", "place": "Vestavia Hills city", "county": "Jefferson County",
-      "reason": "no_match", "message": "cracked sidewalk", "at": "2026-08-28T17:42:10.001Z" }
-  ]
-}
+    { "serviceType": "sidewalk", "place": "Birmingham city", "county": "Jefferson County",
+      "reason": "ambiguous_ownership", "message": "the sidewalk is broken",
+      "at": "2026-08-28T17:42:10.001Z" }
+  ] }
 ```
 
-`reason` is one of `no_match`, `ambiguous_ownership`, `out_of_coverage`. In-memory for now,
-so it resets on redeploy.
+`reason` is `no_match`, `ambiguous_ownership`, or `out_of_coverage`.
+
+`ambiguous_ownership` fires only on **genuine** contention — a primary record that is not
+high-confidence, or an alternate carrying a low-confidence documented disagreement. Almost
+every city location has a county record behind it; logging that as a conflict every time
+would make the register worthless.
+
+In-memory for now, so it resets on redeploy.
 
 ---
 
 ## `GET /api/health`
 
-`{ "ok": true, "officeCount": 21, "hasApiKey": true }` — useful for confirming a deploy.
+`{ "ok": true, "officeCount": 28, "hasApiKey": false }` — useful for confirming a deploy.
+`hasApiKey: false` is not a failure; classification falls back to deterministic keyword
+rules.
 
 ---
 
 ## Worked examples
 
 ```bash
-# routed
-curl -s localhost:3000/api/route-request -H 'content-type: application/json' \
-  -d '{"message":"storm drain floods every rain","location":"2850 19th St S, Homewood, AL 35209"}'
-
-# the mailing-address trap — says Birmingham, resolves to Mountain Brook city
-curl -s localhost:3000/api/route-request -H 'content-type: application/json' \
-  -d '{"message":"big pothole on my street","location":"3600 Bethune Dr, Birmingham, AL 35210"}'
-
-# needs_location
-curl -s localhost:3000/api/route-request -H 'content-type: application/json' \
-  -d '{"message":"there is a pothole"}'
-
-# emergency — short-circuits, no lookup
-curl -s localhost:3000/api/route-request -H 'content-type: application/json' \
-  -d '{"message":"someone was hit by a car","location":"Birmingham, AL"}'
+curl -s localhost:3000/api/route-request -H 'content-type: application/json' -d '{"message":"The sidewalk is broken near my location","synthetic_location_id":"BHM-DEMO-01","jurisdiction_hint":"birmingham-al"}'
 ```
+
+```bash
+curl -s localhost:3000/api/route-request -H 'content-type: application/json' -d '{"message":"The drain at the corner is blocked and floods every hard rain","synthetic_location_id":"BHM-DEMO-02","jurisdiction_hint":"jefferson-county-al"}'
+```
+
+```bash
+curl -s localhost:3000/api/route-request -H 'content-type: application/json' -d '{"message":"someone was hit by a car and is bleeding","synthetic_location_id":"BHM-DEMO-01","jurisdiction_hint":"birmingham-al"}'
+```
+
+---
+
+## Internal shapes
+
+[lib/types.ts](../lib/types.ts) holds the backend's own vocabulary (`ServiceType`,
+`OfficeRecord`, `RouteResponse`). It is **not** the integration contract and the UI must not
+import from it. Translation happens in one place: [lib/handoff.ts](../lib/handoff.ts).

@@ -227,6 +227,46 @@ export interface HandoffResponse {
 }
 
 /* ------------------------------------------------------------------ *
+ * 4b. The two non-handoff outcomes
+ * ------------------------------------------------------------------ */
+
+/**
+ * `HandoffResponse` describes a routed answer. Two real cases are not routed answers:
+ * a life-safety emergency, and a request we have no evidence for. Neither can be
+ * expressed by inventing a `likely_responsible_entity`.
+ *
+ * So the API wraps its result in an `outcome` discriminator. A handoff carries every
+ * frozen `HandoffResponse` field unchanged — this is a superset of the frozen shape,
+ * not a change to it. The UI branches on `outcome` before reading anything else.
+ */
+export interface EmergencyResult {
+  outcome: 'emergency'
+  message: string
+  disclaimer: string
+}
+
+export interface NotCoveredResult {
+  outcome: 'not_covered'
+  /** Plain-language explanation. Never a guess at an office. */
+  reason: string
+  /** What we would need in order to answer, when that is knowable. */
+  conflict_or_gap: string | null
+  disclaimer: string
+}
+
+export type HandoffResult = { outcome: 'handoff' } & HandoffResponse
+
+export type RouteApiResult = HandoffResult | EmergencyResult | NotCoveredResult
+
+/** Shown when life-safety language is detected. No lookup runs. */
+export const EMERGENCY_MESSAGE =
+  'This sounds like an emergency. Call 911 now. We did not look up a routing office.'
+
+export function isHandoff(result: RouteApiResult): result is HandoffResult {
+  return result.outcome === 'handoff'
+}
+
+/* ------------------------------------------------------------------ *
  * 5. Mock — one complete synthetic case so the UI can build standalone
  * ------------------------------------------------------------------ */
 
@@ -285,15 +325,15 @@ export const MOCK_BIRMINGHAM_SIDEWALK_RESPONSE: HandoffResponse = {
  * Maps a frozen subtype to the internal ServiceType used by the existing
  * classifier and JSON repository.
  *
- * `fallen-tree-debris` has no exact internal equivalent. `illegal_dumping` is the
- * closest existing bucket, and there are currently ZERO tree/debris rows in
- * data/offices.seed.json. Tracked as an open item in docs/integration-checklist.md.
+ * `fallen_tree_debris` was added to lib/types.ts and data/offices.seed.json so that
+ * all four frozen subtypes have real coverage in all three jurisdictions. Before that
+ * it had no internal equivalent and zero data rows.
  */
 export const SUBTYPE_TO_INTERNAL_SERVICE_TYPE: Record<IssueSubtype, string> = {
   'pothole-road-damage': 'pothole_street',
   'sidewalk-damage': 'sidewalk',
   'blocked-drainage': 'storm_drain',
-  'fallen-tree-debris': 'illegal_dumping',
+  'fallen-tree-debris': 'fallen_tree_debris',
 }
 
 /** Reverse bridge. Internal types outside the frozen four map to null. */
@@ -301,7 +341,8 @@ export const INTERNAL_SERVICE_TYPE_TO_SUBTYPE: Record<string, IssueSubtype | nul
   pothole_street: 'pothole-road-damage',
   sidewalk: 'sidewalk-damage',
   storm_drain: 'blocked-drainage',
-  illegal_dumping: 'fallen-tree-debris',
+  fallen_tree_debris: 'fallen-tree-debris',
+  illegal_dumping: null,
   traffic_signal: null,
   street_light: null,
   abandoned_vehicle: null,
