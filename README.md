@@ -4,13 +4,14 @@ CivicRoute BHM is a Birmingham-region municipal service navigator built for the 
 
 ## Judge review
 
+- **Working public demo:** [https://birmingham-regional-service.vercel.app/](https://birmingham-regional-service.vercel.app/)
 - **Canonical judged source:** this [`main`](https://github.com/melinastafford15/birmingham-regional-service-navigator/tree/main) branch
 - **Working artifact:** the resident interface in [`app/`](app/) and its routing pipeline in [`lib/`](lib/)
 - **Local review:** follow [Run the artifact locally](#run-the-artifact-locally); no API key is required
 
 > **Review note:** `main` is the single source of truth for the judged artifact. No pull request or alternate branch is required to review the project.
 
-> **Submission gap:** A new public deployment built from `main`, or a 60-second demo video, must be linked here before submission. The earlier branch-based deployment is intentionally not used.
+Because the artifact can be reviewed through the working public link above, the event rules do not require a separate 60-second demo video.
 
 > **Prototype notice:** Every location, office record, phone number, and source link shown in the demo is synthetic. CivicRoute BHM is a navigation aid, not a legal determination, and it does not submit a service request to any agency.
 
@@ -152,6 +153,7 @@ Claude does **not** choose the responsible office or invent contact information.
 
 ## What works today
 
+- The [public browser interface](https://birmingham-regional-service.vercel.app/) is available without installation or sign-in.
 - The browser interface builds and runs from the public `main` branch without an Anthropic API key.
 - Three synthetic demonstration jurisdictions and four frozen example locations route through the application API.
 - Four public right-of-way issue types are supported.
