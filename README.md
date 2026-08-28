@@ -76,7 +76,7 @@ Scope is frozen for submission. Changes require sign-off from the product lead.
 
 ```mermaid
 flowchart TD
-    R["Resident<br/>(web chat)"] -->|"message + synthetic_location_id<br/>+ jurisdiction_hint"| UI["Handoff UI<br/>app/page.tsx — JJ<br/>NOT BUILT YET"]
+    R["Resident<br/>(web chat)"] -->|"message + synthetic_location_id<br/>+ jurisdiction_hint"| UI["Handoff UI<br/>app/page.tsx — JJ"]
     UI -->|RouteRequestPayload| API["POST /api/route-request<br/>validate + delegate"]
 
     API -->|"invalid / real address"| R400["HTTP 400<br/>refused"]
@@ -142,6 +142,7 @@ cp .env.example .env.local
 | Variable | Required | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | No | Enables model-based classification. **Without it the app still runs** — classification falls back to deterministic keyword rules. |
+| `ANTHROPIC_WORKSPACE_ID` | No | Required only for identity-linked keys scoped to an Anthropic workspace. Omit it for ordinary API keys. |
 
 `.env*` files are gitignored. No key is ever committed, logged, or sent to the browser —
 the classifier runs server-side only.
@@ -206,7 +207,7 @@ The demo does not depend on the network or on Claude being reachable.
 
 | Failure | Behavior |
 |---|---|
-| No `ANTHROPIC_API_KEY` | Deterministic keyword classification. Response is marked `keyword_fallback`. |
+| No `ANTHROPIC_API_KEY` | Classification uses the deterministic keyword rules. |
 | Claude API errors or times out | Same keyword fallback. The error is logged server-side; the resident still gets a routed answer. |
 | Model returns unparseable output | Same keyword fallback. |
 | Evidence lookup finds nothing | `not_covered` — says so plainly, guesses nothing, writes a gap-register entry. |
@@ -222,11 +223,10 @@ The rule: **degrade to a narrower honest answer, never to a confident wrong one.
 
 All three locations are fabricated. No such addresses exist.
 
-> **Current state, stated plainly:** all three cases **work today against the API** and
-> were verified with no `ANTHROPIC_API_KEY` set, on the deterministic fallback path. They
-> are **not yet runnable in a browser** — `app/page.tsx` is still framework boilerplate.
-> Run them with the `curl` commands in [docs/API.md](docs/API.md), or build against
-> `MOCK_BIRMINGHAM_SIDEWALK_RESPONSE`. Tracked in
+> **Current state, stated plainly:** all three cases work end to end in the web interface
+> and were verified with no `ANTHROPIC_API_KEY` set, on the deterministic fallback path.
+> The same cases can also be exercised with the commands in [docs/API.md](docs/API.md).
+> Progress and remaining evidence limitations are tracked in
 > [docs/integration-checklist.md](docs/integration-checklist.md).
 
 ### 1. `BHM-DEMO-01` — Birmingham sidewalk
@@ -282,9 +282,8 @@ Stated plainly, because an honest demo is the goal.
 6. **Classification is not evaluated.** There is no scored accuracy number yet, and we do
    not claim one.
 7. **No live status.** No queue position, no office hours, no promise anyone is open.
-8. **No browser UI yet.** The API serves the frozen contract and all three cases work,
-   but `app/page.tsx` is still framework boilerplate. This is the only thing between the
-   current state and a running demo.
+8. **No automated browser suite.** The live synthetic flows are checked manually; a
+   repeatable end-to-end accessibility suite is roadmap work.
 
 ---
 
@@ -316,6 +315,7 @@ widening of scope.** A wrong answer delivered through more channels is worse, no
 | Upendar | `Upendar11` | Claude RAG/API and safety | `feat/rag-api` |
 
 Integration gates and PR order: [docs/integration-checklist.md](docs/integration-checklist.md).
+Ready-to-paste Impact Lab write-up: [docs/submission.md](docs/submission.md).
 
 ---
 

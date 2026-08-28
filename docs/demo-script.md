@@ -6,11 +6,9 @@ Before you start: `npm run dev`, browser at <http://localhost:3000>, a second ta
 `/api/gaps`. The demo works with or without `ANTHROPIC_API_KEY` — if the key is absent,
 say so out loud, because the graceful degradation is a feature worth showing.
 
-> ⚠️ **Rehearsal prerequisite.** This script describes the finished demo. As of 2026-08-28
-> the handoff UI is not built and the API still speaks the older request shape, so the
-> script is **not yet runnable end to end**. Do not rehearse against a live build until the
-> UI gate and API gate in [integration-checklist.md](integration-checklist.md) are green.
-> Until then this document is the target the lanes are building toward.
+> **Rehearsal status:** the UI and API now share the frozen contract, so this script is
+> runnable end to end with the synthetic dataset. Every contact is still an example
+> placeholder pending Taylor's official-source verification pass.
 
 ---
 

@@ -47,6 +47,9 @@ function ContactRow({ label, value, href }: { label: string; value: string | nul
 
 export function HandoffCard({ data }: { data: HandoffResponse }) {
   const hasContact = data.official_contact && (data.official_contact.phone || data.official_contact.email || data.official_contact.form_url)
+  const isExampleData = data.sources.some(
+    (source) => source.url.includes('example.invalid') || /placeholder/i.test(source.title),
+  )
 
   return (
     <section aria-labelledby="handoff-heading" className="rounded-xl border border-zinc-300 bg-white p-6 shadow-sm">
@@ -54,11 +57,18 @@ export function HandoffCard({ data }: { data: HandoffResponse }) {
         <h2 id="handoff-heading" className="text-xl font-bold text-zinc-900">
           Likely place to start
         </h2>
-        <span
-          className={`rounded-full border px-3 py-1 text-sm font-semibold ${CONFIDENCE_STYLE[data.confidence]}`}
-        >
-          {CONFIDENCE_TEXT[data.confidence]}
-        </span>
+        <div className="flex flex-wrap gap-2">
+          {isExampleData && (
+            <span className="rounded-full border border-blue-700 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-900">
+              Example data
+            </span>
+          )}
+          <span
+            className={`rounded-full border px-3 py-1 text-sm font-semibold ${CONFIDENCE_STYLE[data.confidence]}`}
+          >
+            {CONFIDENCE_TEXT[data.confidence]}
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">

@@ -59,6 +59,34 @@ export function UnknownJurisdictionPanel({ supportedJurisdictions }: { supported
   )
 }
 
+export function EmergencyPanel({ message, disclaimer }: { message: string; disclaimer: string }) {
+  return (
+    <section role="alert" className="rounded-xl border border-red-700 bg-red-50 p-6">
+      <h2 className="text-xl font-bold text-red-950">Call 911 now</h2>
+      <p className="mt-2 text-base font-semibold text-red-950">{message}</p>
+      <p className="mt-4 text-sm text-red-900">{disclaimer}</p>
+    </section>
+  )
+}
+
+export function NotCoveredPanel({
+  reason,
+  conflictOrGap,
+  disclaimer,
+}: {
+  reason: string
+  conflictOrGap: string | null
+  disclaimer: string
+}) {
+  return (
+    <Panel title="This prototype cannot route that request" tone="warning">
+      <p>{reason}</p>
+      {conflictOrGap && <p className="mt-3 font-medium">Known gap: {conflictOrGap}</p>}
+      <p className="mt-4 text-sm text-zinc-700">{disclaimer}</p>
+    </Panel>
+  )
+}
+
 export function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <section role="alert" className="rounded-xl border border-red-700 bg-red-50 p-6">

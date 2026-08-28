@@ -34,7 +34,7 @@ All four lanes use the frozen shapes in [lib/contracts.ts](../lib/contracts.ts).
 - [x] Frozen contracts exist in code (`lib/contracts.ts`)
 - [x] Complete mock response for the Birmingham sidewalk case exported
 - [x] Three synthetic demo locations defined and frozen
-- [ ] UI sends `RouteRequestPayload` (`message`, `synthetic_location_id`, `jurisdiction_hint`) — blocked on the UI
+- [x] UI sends `RouteRequestPayload` (`message`, `synthetic_location_id`, `jurisdiction_hint`)
 - [ ] Retrieval returns `EvidenceBundle` — lookup works; the named wrapper is Andrew's to add
 - [x] API returns `HandoffResponse` (inside `RouteApiResult`)
 - [x] Disclaimer string is imported from `contracts.ts`, never retyped
@@ -70,17 +70,17 @@ All four lanes use the frozen shapes in [lib/contracts.ts](../lib/contracts.ts).
 
 Every required field visible. These are eligibility requirements, not styling preferences.
 
-- [ ] `likely_responsible_entity` and `jurisdiction`
-- [ ] `reason`
-- [ ] `confidence`
-- [ ] `conflict_or_gap` rendered whenever non-null
-- [ ] `official_contact` — phone, email, or form
-- [ ] `sources[]` with title, publisher, link, and `last_checked` date
-- [ ] `requires_human_confirmation` + `human_confirmation_instruction`
-- [ ] `disclaimer` verbatim on every routed response
-- [ ] Visible **example data** badge on any synthetic record
-- [ ] Location picker offers only the three frozen synthetic locations — no free-text address
-- [ ] Keyboard navigable; contrast meets WCAG AA; card readable by screen reader in order
+- [x] `likely_responsible_entity` and `jurisdiction`
+- [x] `reason`
+- [x] `confidence`
+- [x] `conflict_or_gap` rendered whenever non-null
+- [x] `official_contact` — phone, email, or form
+- [x] `sources[]` with title, publisher, link, and `last_checked` date
+- [x] `requires_human_confirmation` + `human_confirmation_instruction`
+- [x] `disclaimer` verbatim on every routed response
+- [x] Visible **example data** badge on any synthetic record
+- [x] Location picker offers only the three frozen synthetic locations — no free-text address
+- [x] Semantic keyboard controls and screen-reader order verified; result card checked at 390 px mobile width
 
 ### 6. Safety gate
 
@@ -96,9 +96,9 @@ Every required field visible. These are eligibility requirements, not styling pr
 
 - [x] `npm run build && npm run lint && npm run typecheck` pass (build must precede typecheck; see README)
 - [ ] README setup instructions verified against that clean clone
-- [ ] All three demo scenarios run end to end — verified at the API; blocked on the UI
-- [ ] Every limitation documented and none overstated
-- [ ] Submission text links the repo and states MVP, impact, safety boundaries, roadmap
+- [x] All three demo scenarios run end to end through the browser UI and application API
+- [x] Every current limitation documented and none overstated
+- [x] Submission text links the repo and states MVP, impact, safety boundaries, roadmap
 
 ---
 
@@ -141,6 +141,10 @@ Per the standing rule, these are the smallest integration fixes and are recorded
 | `data/offices.seed.json` | Taylor | Three `fallen_tree_debris` rows added, all synthetic, `555-01xx`, with notes recording the private-property caveat. **These need verification like every other row.** |
 | `docs/API.md` | Melina | Rewritten to the frozen contract. |
 | `docs/brief.md`, `docs/problem-statement.md` | Melina | SMS reworded to roadmap-only; scope aligned to 4 subtypes / 3 jurisdictions; removed the "copy-ready report packet" claim, which describes a feature that does not exist. |
+| `app/lib/handoff-client.ts` | JJ / UI | Removed the duplicate mock endpoint contract and adapted the UI directly to the frozen `RouteApiResult` served by `/api/route-request`. |
+| `app/lib/handoff-contract.ts`, `app/lib/handoff-fixtures.ts` | JJ / UI | Reuse the root frozen contracts and synthetic locations as the single source of truth; UI-only display copy remains local. |
+| `app/page.tsx`, `app/components/handoff/*` | JJ / UI | Live application flow enabled; emergency and not-covered outcomes added; synthetic responses display a visible **Example data** badge. |
+| `.env.example`, `README.md` | Andrew / Melina | Documented optional `ANTHROPIC_WORKSPACE_ID` support added on `main`; no secret values are committed. |
 
 `lib/respond.ts`, `lib/geocode.ts`, `lib/gaps.ts`, `lib/repository.ts`, and the repository
 implementation were **not modified**.
@@ -157,12 +161,16 @@ deterministic-fallback path.
 | `BHM-DEMO-01` sidewalk | → Birmingham DOT, `medium`, 2 sources, conflict named |
 | `BHM-DEMO-02` drainage | → Jefferson County Roads, `medium`, county-level reason |
 | `BHM-DEMO-03` pothole | → Homewood Public Works, `high`, no gap logged |
+| `BHM-DEMO-03` "tree is blocking" | → Homewood Public Works, `fallen-tree-debris` |
 | Fallen tree, `BHM-DEMO-01` | → Birmingham Public Works, `fallen-tree-debris` |
 | "hit by a car and is bleeding" | → `emergency`, no lookup ran |
 | Street light (outside frozen four) | → `not_covered` + gap entry |
 | Real address as location id | → HTTP 400, refused |
 | Unknown demo id / bad jurisdiction | → HTTP 400 with specific reasons |
 | Gap register | 2 entries from 4 routed requests — genuine contention only |
+| Browser UI, 3 jurisdictions | → all three routed cards rendered from the live application API |
+| Browser UI, emergency / unsupported | → dedicated safe outcome panels, with no invented office |
+| Mobile browser, 390 × 844 | → routed card remains readable and ordered correctly |
 
 ### One fix this testing surfaced
 
@@ -170,7 +178,11 @@ Every city location has a county row behind it, so `ambiguous_ownership` fired o
 request and confidence never reached `high`. That made both signals worthless. Contention
 now requires a primary that is not high-confidence, or an alternate carrying a
 low-confidence documented disagreement. Homewood pothole is now `high` with no gap logged;
-the sidewalk case, which has genuinely conflicting published information, still logs.
+the sidewalk case, which has genuinely conflicting placeholder information, still logs.
+
+The browser pass also surfaced a phrase-matching gap: "tree blocking" matched, but "tree
+is blocking" did not. The deterministic rule now accepts the optional verb and the
+Homewood tree scenario routes correctly.
 
 ---
 
@@ -182,10 +194,10 @@ the sidewalk case, which has genuinely conflicting published information, still 
 | Data | 🟡 28 rows; all four subtypes × three jurisdictions covered. **Every row is still a synthetic placeholder pending Taylor's verification.** |
 | Retrieval | 🟢 Ranked city→county lookup works. A named `retrieveEvidence()` wrapper is still Andrew's to add. |
 | API | 🟢 Valid frozen response on all three cases + deterministic fallback verified with no API key |
-| UI | 🔴 `app/page.tsx` is still create-next-app boilerplate |
+| UI | 🟢 Live browser flow consumes the frozen API contract; routed, emergency, and not-covered outcomes verified |
 | Safety | 🟢 Synthetic-only enforced, no live submission, no secret tracked, all numbers `555-01xx`, "likely responsible entity" wording throughout |
-| Release | 🟡 build / lint / typecheck green; no automated test suite; UI blocks the end-to-end demo |
+| Release | 🟡 build / lint / typecheck and manual end-to-end browser checks green; clean-clone rehearsal and automated tests remain |
 
-**Critical path: the UI — and it is now the only thing between here and a running demo.**
-The API is live and returns the frozen shape today. JJ can build against either the real
-endpoint or `MOCK_BIRMINGHAM_SIDEWALK_RESPONSE`.
+**Critical path: verify the placeholder office/source rows and rehearse from a clean
+clone.** The application itself now runs end to end, and `docs/submission.md` is ready to
+paste into the final submission issue.

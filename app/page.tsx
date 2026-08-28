@@ -4,9 +4,16 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { IssueForm, type FormErrors } from '@/app/components/handoff/IssueForm'
 import { HandoffCard } from '@/app/components/handoff/HandoffCard'
 import { StatusRegion } from '@/app/components/handoff/StatusRegion'
-import { EmptyStatePanel, ErrorPanel, OutOfScopePanel, UnknownJurisdictionPanel } from '@/app/components/handoff/OutcomePanels'
+import {
+  EmergencyPanel,
+  EmptyStatePanel,
+  ErrorPanel,
+  NotCoveredPanel,
+  OutOfScopePanel,
+  UnknownJurisdictionPanel,
+} from '@/app/components/handoff/OutcomePanels'
 import { SYNTHETIC_LOCATIONS } from '@/app/lib/handoff-fixtures'
-import { getApiMode, submitRoute } from '@/app/lib/handoff-client'
+import { submitRoute } from '@/app/lib/handoff-client'
 import type { RouteOutcome } from '@/app/lib/handoff-contract'
 
 export default function Home() {
@@ -16,7 +23,6 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false)
   const [outcome, setOutcome] = useState<RouteOutcome | null>(null)
   const [statusMessage, setStatusMessage] = useState('')
-  const [lastMode, setLastMode] = useState<'mock' | 'live' | null>(null)
   const resultHeadingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -45,28 +51,22 @@ export default function Home() {
     const location = SYNTHETIC_LOCATIONS.find((loc) => loc.id === locationId)
     if (!location) return
 
-    const mode = getApiMode()
     setSubmitting(true)
     setStatusMessage('Finding the likely place to start…')
     setOutcome(null)
-    setLastMode(mode)
 
     const result = await submitRoute({
       message,
       syntheticLocationId: location.id,
       jurisdictionHint: location.jurisdictionHint,
-      mode,
     })
 
     setOutcome(result)
     setSubmitting(false)
-    setStatusMessage(
-      result.kind === 'ok'
-        ? 'Result ready.'
-        : result.kind === 'error'
-          ? 'Something went wrong.'
-          : 'This request is outside what the prototype currently supports.',
-    )
+    if (result.kind === 'ok') setStatusMessage('Result ready.')
+    else if (result.kind === 'error') setStatusMessage('Something went wrong.')
+    else if (result.kind === 'emergency') setStatusMessage('Emergency guidance ready.')
+    else setStatusMessage('This request is outside what the prototype currently supports.')
   }
 
   function handleRetry() {
@@ -90,7 +90,7 @@ export default function Home() {
           agency, and it does not collect a real address, name, phone number, or email.
         </div>
         <div className="w-fit rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600">
-          Demo mode — showing example responses
+          Live application flow — synthetic example data
         </div>
       </header>
 
@@ -114,17 +114,25 @@ export default function Home() {
 
       {outcome && !submitting && (
         <div ref={resultHeadingRef} tabIndex={-1}>
-          {lastMode === 'live' && (
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Served by the live API
-            </p>
-          )}
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Served by the application API
+          </p>
           {outcome.kind === 'ok' && <HandoffCard data={outcome.data} />}
           {outcome.kind === 'out_of_scope' && <OutOfScopePanel supportedIssueTypes={outcome.supportedIssueTypes} />}
           {outcome.kind === 'unknown_jurisdiction' && (
             <UnknownJurisdictionPanel supportedJurisdictions={outcome.supportedJurisdictions} />
           )}
           {outcome.kind === 'error' && <ErrorPanel message={outcome.message} onRetry={handleRetry} />}
+          {outcome.kind === 'emergency' && (
+            <EmergencyPanel message={outcome.message} disclaimer={outcome.disclaimer} />
+          )}
+          {outcome.kind === 'not_covered' && (
+            <NotCoveredPanel
+              reason={outcome.reason}
+              conflictOrGap={outcome.conflictOrGap}
+              disclaimer={outcome.disclaimer}
+            />
+          )}
         </div>
       )}
     </div>
