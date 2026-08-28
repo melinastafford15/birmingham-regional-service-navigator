@@ -85,9 +85,11 @@ export default function Home() {
           most likely handles it, with its confidence and its source.
         </p>
         <div className="rounded-lg border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
-          <strong>This is a prototype.</strong> It uses synthetic example locations and
-          example office data only. It does not submit a service request to any real
-          agency, and it does not collect a real address, name, phone number, or email.
+          <strong>This is a prototype.</strong> It uses synthetic example locations.
+          Office contacts are a mix of verified public listings and example placeholders;
+          anything unverified is marked <strong>[Synthetic]</strong> wherever it appears.
+          It does not submit a service request to any real agency, and it does not collect
+          a real address, name, phone number, or email.
         </div>
         <div className="w-fit rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600">
           Demo mode — showing example responses
