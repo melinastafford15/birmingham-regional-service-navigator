@@ -73,8 +73,14 @@ export type Confidence = 'high' | 'medium' | 'low'
  * Synthetic demo locations. The MVP never accepts a real resident address:
  * the UI sends an opaque id and the backend resolves it from a fixed table.
  * Every id is prefixed "BHM-DEMO-" so it is visibly synthetic in logs and screenshots.
+ *
+ * Deliberately a plain `string`, not a `` `BHM-DEMO-${string}` `` template literal.
+ * The template type forced a cast at every boundary where an id arrives from a picker,
+ * a URL, or JSON — and bought nothing, since any prefixed string satisfied it anyway.
+ * The real enforcement is at runtime: `isSyntheticLocationId` checks the prefix and
+ * `validateRouteRequest` requires membership in the frozen table.
  */
-export type SyntheticLocationId = `BHM-DEMO-${string}`
+export type SyntheticLocationId = string
 
 export interface RouteRequestPayload {
   /** The resident's plain-language description. */
