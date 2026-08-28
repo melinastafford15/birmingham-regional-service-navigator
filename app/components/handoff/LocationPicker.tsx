@@ -9,21 +9,21 @@ interface LocationPickerProps {
 export function LocationPicker({ value, onChange, errorId }: LocationPickerProps) {
   return (
     <fieldset aria-describedby={errorId}>
-      <legend className="text-sm font-semibold text-zinc-900">
+      <legend className="text-sm font-semibold text-ink">
         Choose a synthetic demo location
       </legend>
-      <p className="mt-1 text-sm text-zinc-600">
-        This prototype does not collect a real address. Pick one of three example
+      <p className="mt-1 text-sm text-ink-muted">
+        This prototype does not collect a real address. Pick one of four example
         locations to see how the tool responds.
       </p>
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {SYNTHETIC_LOCATIONS.map((location) => {
           const inputId = `location-${location.id}`
           return (
             <label
               key={location.id}
               htmlFor={inputId}
-              className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-300 p-3 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600"
+              className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-3 transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-surface"
             >
               <input
                 id={inputId}
@@ -35,8 +35,8 @@ export function LocationPicker({ value, onChange, errorId }: LocationPickerProps
                 className="mt-1"
               />
               <span>
-                <span className="block font-medium text-zinc-900">{location.label}</span>
-                <span className="block text-sm text-zinc-600">{location.description}</span>
+                <span className="block font-medium text-ink">{location.label}</span>
+                <span className="block text-sm text-ink-muted">{location.description}</span>
               </span>
             </label>
           )

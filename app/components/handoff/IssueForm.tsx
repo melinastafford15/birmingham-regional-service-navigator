@@ -23,6 +23,8 @@ const EXAMPLE_PROMPTS = [
   'There is a large pothole in the road',
 ]
 
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+
 export function IssueForm({
   message,
   onMessageChange,
@@ -38,10 +40,10 @@ export function IssueForm({
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
       <div>
-        <label htmlFor="issue-message" className="text-sm font-semibold text-zinc-900">
+        <label htmlFor="issue-message" className="text-sm font-semibold text-ink">
           Describe the problem
         </label>
-        <p id="message-hint" className="mt-1 text-sm text-zinc-600">
+        <p id="message-hint" className="mt-1 text-sm text-ink-muted">
           Plain language is fine. We cover pothole or road damage, sidewalk damage,
           blocked drainage, and fallen tree or debris.
         </p>
@@ -53,10 +55,10 @@ export function IssueForm({
           onChange={(event) => onMessageChange(event.target.value)}
           aria-describedby={errors.message ? `message-hint ${messageErrorId}` : 'message-hint'}
           aria-invalid={Boolean(errors.message)}
-          className="mt-2 w-full rounded-md border border-zinc-300 p-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          className={`mt-2 w-full rounded-lg border bg-card p-3 text-base text-ink ${errors.message ? 'border-danger' : 'border-border'} ${FOCUS_RING}`}
         />
         {errors.message && (
-          <p id={messageErrorId} role="alert" className="mt-1 text-sm font-medium text-red-700">
+          <p id={messageErrorId} role="alert" className="mt-1 text-sm font-medium text-danger">
             {errors.message}
           </p>
         )}
@@ -66,7 +68,7 @@ export function IssueForm({
               key={example}
               type="button"
               onClick={() => onMessageChange(example)}
-              className="rounded-full border border-zinc-300 px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              className={`rounded-full border border-border bg-card px-3 py-1 text-sm text-ink-muted transition-colors hover:border-accent/40 hover:bg-accent-soft hover:text-ink ${FOCUS_RING}`}
             >
               Use example: “{example}”
             </button>
@@ -81,7 +83,7 @@ export function IssueForm({
           errorId={errors.location ? locationErrorId : undefined}
         />
         {errors.location && (
-          <p id={locationErrorId} role="alert" className="mt-2 text-sm font-medium text-red-700">
+          <p id={locationErrorId} role="alert" className="mt-2 text-sm font-medium text-danger">
             {errors.location}
           </p>
         )}
@@ -92,11 +94,11 @@ export function IssueForm({
           type="submit"
           disabled={submitting}
           aria-disabled={submitting}
-          className="w-full rounded-md bg-blue-700 px-5 py-3 text-base font-semibold text-white hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-900 disabled:cursor-not-allowed disabled:bg-zinc-400 sm:w-auto"
+          className={`w-full rounded-lg bg-accent px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-ink-muted/40 disabled:text-ink-muted sm:w-auto ${FOCUS_RING}`}
         >
           {submitting ? 'Finding the likely office…' : 'Find where to start'}
         </button>
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-2 text-sm text-ink-muted">
           This does not submit a service request to any office.
         </p>
       </div>

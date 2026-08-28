@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Info } from 'lucide-react'
 import { IssueForm, type FormErrors } from '@/app/components/handoff/IssueForm'
 import { HandoffCard } from '@/app/components/handoff/HandoffCard'
 import { StatusRegion } from '@/app/components/handoff/StatusRegion'
@@ -34,7 +35,7 @@ export default function Home() {
       nextErrors.message = 'Describe the problem before continuing.'
     }
     if (!locationId) {
-      nextErrors.location = 'Choose one of the three synthetic demo locations.'
+      nextErrors.location = 'Choose one of the four synthetic demo locations.'
     }
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -75,23 +76,30 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
       <header className="flex flex-col gap-3">
-        <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl">
+        <p className="font-mono text-xs font-medium uppercase tracking-widest text-accent">
+          Resident tool · Prototype
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
           CivicRoute BHM — find the likely place to start
         </h1>
-        <p className="text-base text-zinc-700">
+        <p className="text-base text-ink-muted">
           Describe a public right-of-way problem and this tool will suggest which office
           most likely handles it, with its confidence and its source.
         </p>
-        <div className="rounded-lg border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
-          <strong>This is a prototype.</strong> It uses synthetic example locations.
-          Office contacts are a mix of verified public listings and example placeholders;
-          anything unverified is marked <strong>[Synthetic]</strong> wherever it appears.
-          It does not submit a service request to any real agency, and it does not collect
-          a real address, name, phone number, or email.
+        <div className="flex items-start gap-2 rounded-lg border border-accent/30 bg-accent-soft p-3 text-sm text-ink">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+          <p>
+            <strong className="font-semibold">This is a prototype.</strong> It uses synthetic
+            example locations. Office contacts are a mix of verified public listings and
+            example placeholders; anything unverified is marked{' '}
+            <strong className="font-semibold">[Synthetic]</strong> wherever it appears. It does
+            not submit a service request to any real agency, and it does not collect a real
+            address, name, phone number, or email.
+          </p>
         </div>
-        <div className="w-fit rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600">
+        <div className="w-fit rounded-full border border-border bg-card px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-ink-muted">
           Demo mode — showing example responses
         </div>
       </header>
@@ -111,13 +119,13 @@ export default function Home() {
       />
 
       {submitting && (
-        <p className="text-base font-medium text-zinc-700">Finding the likely place to start…</p>
+        <p className="text-base font-medium text-ink-muted">Finding the likely place to start…</p>
       )}
 
       {outcome && !submitting && (
         <div ref={resultHeadingRef} tabIndex={-1}>
           {lastMode === 'live' && (
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-wide text-ink-muted">
               Served by the live API
             </p>
           )}
