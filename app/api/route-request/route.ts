@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { classify } from '@/lib/classify'
 import { geocode } from '@/lib/geocode'
 import { recordGap } from '@/lib/gaps'
-import { officeRepository } from '@/lib/repositories/json-repository'
+import { officeRepository } from '@/lib/repositories'
 import { composeSms, emergencyResponse, toRecommendation } from '@/lib/respond'
 import { DISCLAIMER, type RouteRequest, type RouteResponse } from '@/lib/types'
 

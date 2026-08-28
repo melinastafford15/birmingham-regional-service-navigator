@@ -92,9 +92,11 @@ export default function Home() {
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
           <p>
             <strong className="font-semibold">This is a prototype.</strong> It uses synthetic
-            example locations and example office data only. It does not submit a service
-            request to any real agency, and it does not collect a real address, name, phone
-            number, or email.
+            example locations. Office contacts are a mix of verified public listings and
+            example placeholders; anything unverified is marked{' '}
+            <strong className="font-semibold">[Synthetic]</strong> wherever it appears. It does
+            not submit a service request to any real agency, and it does not collect a real
+            address, name, phone number, or email.
           </p>
         </div>
         <div className="w-fit rounded-full border border-border bg-card px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-ink-muted">
