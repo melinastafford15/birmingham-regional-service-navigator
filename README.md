@@ -76,20 +76,24 @@ Scope is frozen for submission. Changes require sign-off from the product lead.
 
 ```mermaid
 flowchart TD
-    R["Resident<br/>(web chat)"] -->|"message + synthetic_location_id<br/>+ jurisdiction_hint"| UI["Handoff UI<br/>app/page.tsx — JJ"]
-    UI -->|RouteRequestPayload| API["Routing API<br/>app/api/route-request — Upendar"]
+    R["Resident<br/>(web chat)"] -->|"message + synthetic_location_id<br/>+ jurisdiction_hint"| UI["Handoff UI<br/>app/page.tsx — JJ<br/>NOT BUILT YET"]
+    UI -->|RouteRequestPayload| API["POST /api/route-request<br/>validate + delegate"]
 
-    API --> CL["Classifier<br/>lib/classify.ts<br/>Claude Opus 5 + keyword fallback"]
-    CL -->|issue_subtype only<br/>never an office| API
+    API -->|"invalid / real address"| R400["HTTP 400<br/>refused"]
+    API --> H["Frozen-contract boundary<br/>lib/handoff.ts"]
 
-    API --> RET["Retrieval<br/>retrieveEvidence() — Andrew"]
-    RET --> WH[("Evidence warehouse<br/>data/offices.seed.json<br/>via OfficeRepository — Taylor")]
-    WH -->|EvidenceBundle| API
+    H --> CL["Classifier<br/>lib/classify.ts<br/>Claude Opus 5, keyword fallback"]
+    CL -->|"issue_subtype only<br/>never an office, never a number"| H
 
-    API -->|HandoffResponse| UI
-    UI --> CARD["Handoff card:<br/>entity · reason · confidence<br/>conflict · contact · sources<br/>human confirmation · disclaimer"]
+    H --> REPO["OfficeRepository.find()<br/>lib/repositories/json-repository.ts"]
+    REPO --> WH[("Evidence warehouse<br/>data/offices.seed.json<br/>source_url + checked_on")]
+    WH -->|"ranked city → county"| H
 
-    API -.->|unresolved or ambiguous| GAP[("Gap register<br/>lib/gaps.ts · GET /api/gaps")]
+    H -->|"RouteApiResult<br/>outcome: handoff"| CARD["Handoff card:<br/>entity · reason · confidence<br/>conflict · contact · sources<br/>human confirmation · disclaimer"]
+    H -->|"outcome: emergency"| E911["911. No lookup ran."]
+    H -->|"outcome: not_covered"| NC["Says so plainly.<br/>Guesses nothing."]
+
+    H -.->|"no match / contested"| GAP[("Gap register<br/>lib/gaps.ts · GET /api/gaps")]
 ```
 
 **The safety property that matters:** the language model classifies the problem and writes
