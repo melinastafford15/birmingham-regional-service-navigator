@@ -145,6 +145,8 @@ Per the standing rule, these are the smallest integration fixes and are recorded
 | `app/lib/handoff-contract.ts`, `app/lib/handoff-fixtures.ts` | JJ / UI | Reuse the root frozen contracts and synthetic locations as the single source of truth; UI-only display copy remains local. |
 | `app/page.tsx`, `app/components/handoff/*` | JJ / UI | Live application flow enabled; emergency and not-covered outcomes added; synthetic responses display a visible **Example data** badge. |
 | `.env.example`, `README.md` | Andrew / Melina | Documented optional `ANTHROPIC_WORKSPACE_ID` support added on `main`; no secret values are committed. |
+| `app/api/route/route.ts` | Backend / UI integration | A later `main` merge introduced a second endpoint using live geocoding and the old underscore contract. It was not retained: `/api/route-request` remains the one synthetic-only frozen endpoint. |
+| `lib/types.ts`, `data/offices.seed.json` | Backend / data integration | Removed the later duplicate `tree_debris` vocabulary and five duplicate rows after the `main` sync. `fallen_tree_debris` and its three in-scope rows remain the single implementation. |
 
 `lib/respond.ts`, `lib/geocode.ts`, `lib/gaps.ts`, `lib/repository.ts`, and the repository
 implementation were **not modified**.
