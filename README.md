@@ -13,7 +13,7 @@ CivicRoute BHM is a Birmingham-region municipal service navigator built for the 
 
 Because the artifact can be reviewed through the working public link above, the event rules do not require a separate 60-second demo video.
 
-> **Prototype notice:** Every location, office record, phone number, and source link shown in the demo is synthetic. CivicRoute BHM is a navigation aid, not a legal determination, and it does not submit a service request to any agency.
+> **Prototype notice:** Every selectable location is synthetic. Office contacts come from a combined Supabase-plus-seed evidence layer; anything detected as an unverified placeholder is visibly marked **[Synthetic]**. CivicRoute BHM is a navigation aid, not a legal determination, and it does not submit a service request to any agency.
 
 ## Team
 
@@ -85,16 +85,20 @@ These paths broaden the implementation beyond the four-case browser demo. The ba
 
 ## Data and evidence sources
 
-The current demonstration uses synthetic data only.
+The deployed demonstration uses a combined `supabase+seed` evidence source. At the latest health check, it reported **48 usable records**: 30 synthetic seed records plus 18 records mapped from the centralized Supabase table.
 
 - **Office and routing records:** [`data/offices.seed.json`](data/offices.seed.json)
 - **Data schema:** [`data/schema.md`](data/schema.md)
+- **Centralized evidence adapter:** [`lib/repositories/supabase-repository.ts`](lib/repositories/supabase-repository.ts)
+- **Supabase schema mapping and synthetic detection:** [`lib/repositories/municipal-evidence.ts`](lib/repositories/municipal-evidence.ts)
 - **Synthetic locations:** `BHM-DEMO-01` through `BHM-DEMO-04` in [`app/lib/handoff-fixtures.ts`](app/lib/handoff-fixtures.ts)
 - **Synthetic phone numbers:** Reserved `555-01xx` fictional numbers
 - **Synthetic source links:** Non-resolving `example.invalid` URLs
 - **Policy and responsibility descriptions:** Team-authored examples designed to demonstrate jurisdictional ambiguity
 
-All **30 seed evidence records** are marked synthetic. No current office, contact, policy, or responsibility record has been verified against an official government source.
+All **30 seed evidence records** carry `is_synthetic: true`. The Supabase source schema does not contain that field, so its adapter conservatively derives synthetic status from placeholder signals such as `555` phone numbers and reserved test/example domains. Records detected as synthetic render with **[Synthetic]** and **Example data** labels.
+
+Every tested combination for the four selectable public-demo locations currently resolves to a synthetic seed placeholder. The Supabase records make the broader data layer a mix of mapped public listings and placeholders, but they still require human source verification before a pilot or consequential use.
 
 The web interface sends only a frozen synthetic location ID. The server maps that ID to one of four example addresses before resolving its demonstration jurisdiction; a resident cannot enter a real address through the judged interface.
 
@@ -175,7 +179,7 @@ Claude does **not** choose the responsible office or invent contact information.
 - Four public right-of-way issue types are supported.
 - The direct-address `/api/route-request` path supports the broader backend service taxonomy and Census jurisdiction resolution.
 - The `/api/sms` webhook composes a safe preview without credentials and can send a resident reply when Sendblue is configured.
-- Optional Supabase configuration adds a centralized evidence source behind the same repository interface.
+- The deployed health endpoint currently reports a reachable `supabase+seed` source with 48 usable records: 30 synthetic seed records and 18 Supabase-mapped records.
 - Results display jurisdiction, confidence, reasoning, conflicts, contact information, sources, checked dates, and human-confirmation instructions.
 - Synthetic results display a visible **Example data** label.
 - Emergency language returns 911 guidance.
@@ -189,7 +193,7 @@ Claude does **not** choose the responsible office or invent contact information.
 - All 30 seed evidence records are synthetic placeholders.
 - Phone numbers, source links, office descriptions, and checked dates are examples.
 - The project has not been approved or endorsed by Birmingham, Jefferson County, Homewood, or another government organization.
-- The public demo falls back to the synthetic JSON seed; the optional Supabase source depends on deployment configuration and has not been presented as verified government data.
+- The Supabase source schema lacks an explicit `is_synthetic` field. Placeholder-signal detection is a conservative stopgap, not a substitute for independent human source verification.
 - Retrieval is structured lookup rather than a vector or embedding-based RAG system.
 - Only four issue types and three jurisdictions are available through the public interface.
 - The gap register is in memory and resets on redeploy.
