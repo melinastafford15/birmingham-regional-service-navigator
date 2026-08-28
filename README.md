@@ -4,14 +4,13 @@ CivicRoute BHM is a Birmingham-region municipal service navigator built for the 
 
 ## Judge review
 
-- **Working public demo:** [https://birmingham-regional-service.vercel.app/](https://birmingham-regional-service.vercel.app/)
-- **Matching source branch:** [`docs/product-submit`](https://github.com/melinastafford15/birmingham-regional-service-navigator/tree/docs/product-submit)
-- **Demo walkthrough:** [`docs/demo-script.md`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/docs/demo-script.md)
-- **Submission copy:** [`docs/submission.md`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/docs/submission.md)
+- **Canonical judged source:** this [`main`](https://github.com/melinastafford15/birmingham-regional-service-navigator/tree/main) branch
+- **Working artifact:** the resident interface in [`app/`](app/) and its routing pipeline in [`lib/`](lib/)
+- **Local review:** follow [Run the artifact locally](#run-the-artifact-locally); no API key is required
 
-> **Review note:** The public Vercel deployment corresponds to the `docs/product-submit` branch. The default `main` branch contains broader experimental routing and SMS work that is not part of the judged public demo. Use the working demo and matching source branch above when reviewing the artifact.
+> **Review note:** `main` is the single source of truth for the judged artifact. No pull request or alternate branch is required to review the project.
 
-Because the artifact is available through a working public link, the event rules do not require a separate 60-second demo video.
+> **Submission gap:** A new public deployment built from `main`, or a 60-second demo video, must be linked here before submission. The earlier branch-based deployment is intentionally not used.
 
 > **Prototype notice:** Every location, office record, phone number, and source link shown in the demo is synthetic. CivicRoute BHM is a navigation aid, not a legal determination, and it does not submit a service request to any agency.
 
@@ -45,9 +44,9 @@ The repeated workflow is:
 
 Government employees also spend time answering and redirecting requests that belong elsewhere.
 
-## What the public demo does
+## What the main artifact does
 
-A resident describes a problem in plain language and chooses one of three clearly labeled synthetic demonstration locations. The application returns:
+A resident describes a problem in plain language and chooses one of four clearly labeled synthetic demonstration locations. The application returns:
 
 - the likely city or county office to contact first;
 - the applicable jurisdiction;
@@ -72,22 +71,22 @@ The three demonstration jurisdictions are:
 - Jefferson County; and
 - City of Homewood.
 
-The public demo does **not** accept a real address, name, phone number, or email. It does not submit, track, or update a service request.
+The judged web interface does **not** accept a real address, name, phone number, or email. It does not submit, track, or update a service request.
 
 ## Data and evidence sources
 
 The current demonstration uses synthetic data only.
 
-- **Office and routing records:** [`data/offices.seed.json`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/data/offices.seed.json)
-- **Data schema:** [`data/schema.md`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/data/schema.md)
-- **Synthetic locations:** `BHM-DEMO-01`, `BHM-DEMO-02`, and `BHM-DEMO-03` in [`lib/contracts.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/lib/contracts.ts)
+- **Office and routing records:** [`data/offices.seed.json`](data/offices.seed.json)
+- **Data schema:** [`data/schema.md`](data/schema.md)
+- **Synthetic locations:** `BHM-DEMO-01` through `BHM-DEMO-04` in [`app/lib/handoff-fixtures.ts`](app/lib/handoff-fixtures.ts)
 - **Synthetic phone numbers:** Reserved `555-01xx` fictional numbers
 - **Synthetic source links:** Non-resolving `example.invalid` URLs
 - **Policy and responsibility descriptions:** Team-authored examples designed to demonstrate jurisdictional ambiguity
 
-All **28 evidence records** are marked synthetic. No current office, contact, policy, or responsibility record has been verified against an official government source.
+All **30 seed evidence records** are marked synthetic. No current office, contact, policy, or responsibility record has been verified against an official government source.
 
-The repository includes Census-geocoding code from broader experimentation, but the deployed demonstration does not accept real addresses or invoke geocoding in its web workflow.
+The web interface sends only a frozen synthetic location ID. The server maps that ID to one of four example addresses before resolving its demonstration jurisdiction; a resident cannot enter a real address through the judged interface.
 
 ## Architecture and approach
 
@@ -96,16 +95,16 @@ Resident web interface
         |
         | message + synthetic location ID
         v
-POST /api/route-request
+POST /api/route
         |
         v
-Frozen request validation
+Synthetic-location adapter
         |
         v
 Claude or keyword issue classification
         |
         v
-Structured JSON evidence retrieval
+Structured seed/Supabase evidence retrieval
         |
         v
 Jurisdiction ranking + conflict detection
@@ -121,16 +120,18 @@ Important demo files:
 
 | File | Purpose |
 |---|---|
-| [`app/page.tsx`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/app/page.tsx) | Accessible resident-facing web interface |
-| [`app/api/route-request/route.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/app/api/route-request/route.ts) | Canonical validated routing endpoint |
-| [`lib/contracts.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/lib/contracts.ts) | Shared request, evidence, outcome, and safety contracts |
-| [`lib/handoff.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/lib/handoff.ts) | Deterministic evidence-to-handoff pipeline |
-| [`lib/classify.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/lib/classify.ts) | Claude-backed classification with keyword fallback |
-| [`lib/repositories/json-repository.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/lib/repositories/json-repository.ts) | Structured record retrieval |
-| [`lib/gaps.ts`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/lib/gaps.ts) | In-memory unresolved and ambiguous routing register |
-| [`data/offices.seed.json`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/data/offices.seed.json) | Synthetic evidence records |
+| [`app/page.tsx`](app/page.tsx) | Accessible resident-facing web interface |
+| [`app/api/route/route.ts`](app/api/route/route.ts) | Synthetic-location adapter used by the web interface |
+| [`app/lib/handoff-contract.ts`](app/lib/handoff-contract.ts) | Resident-facing handoff contract and safety disclaimer |
+| [`lib/classify.ts`](lib/classify.ts) | Claude-backed classification with keyword fallback |
+| [`lib/geocode.ts`](lib/geocode.ts) | Jurisdiction resolution for the four server-side example addresses |
+| [`lib/repositories/index.ts`](lib/repositories/index.ts) | Selects the seed repository or optional Supabase-plus-seed repository |
+| [`lib/repositories/json-repository.ts`](lib/repositories/json-repository.ts) | Structured seed-record retrieval |
+| [`lib/repositories/supabase-repository.ts`](lib/repositories/supabase-repository.ts) | Optional centralized Supabase evidence adapter |
+| [`lib/gaps.ts`](lib/gaps.ts) | In-memory unresolved and ambiguous routing register |
+| [`data/offices.seed.json`](data/offices.seed.json) | Synthetic evidence records |
 
-The JSON repository is the prototype’s centralized evidence layer. Retrieval is deterministic structured lookup, not yet an embedding-based vector database or complete production RAG system.
+The synthetic JSON seed is the no-configuration evidence layer. When the three `SUPABASE_*` environment variables are configured, the same repository interface reads the centralized Supabase table and unions it with the seed. Retrieval is deterministic structured lookup, not yet an embedding-based vector database or complete production RAG system.
 
 ## How Claude is used
 
@@ -151,8 +152,8 @@ Claude does **not** choose the responsible office or invent contact information.
 
 ## What works today
 
-- The [public browser interface](https://birmingham-regional-service.vercel.app/) is available without installation.
-- Three synthetic demonstration jurisdictions route through the application API.
+- The browser interface builds and runs from the public `main` branch without an Anthropic API key.
+- Three synthetic demonstration jurisdictions and four frozen example locations route through the application API.
 - Four public right-of-way issue types are supported.
 - Results display jurisdiction, confidence, reasoning, conflicts, contact information, sources, checked dates, and human-confirmation instructions.
 - Synthetic results display a visible **Example data** label.
@@ -163,8 +164,8 @@ Claude does **not** choose the responsible office or invent contact information.
 
 ## Known limitations and simulated elements
 
-- All three locations are fabricated.
-- All 28 evidence records are synthetic placeholders.
+- All four locations are fabricated.
+- All 30 seed evidence records are synthetic placeholders.
 - Phone numbers, source links, office descriptions, and checked dates are examples.
 - The project has not been approved or endorsed by Birmingham, Jefferson County, Homewood, or another government organization.
 - The evidence repository is a JSON file rather than a deployed database.
@@ -179,12 +180,11 @@ Claude does **not** choose the responsible office or invent contact information.
 
 Designate one municipal service owner to verify and approve the office, contact, jurisdiction, and source records for one narrow workflow—beginning with the Birmingham sidewalk demonstration—then test a fixed set of cases against a human-reviewed answer key before involving residents.
 
-## Run the matching demo branch locally
+## Run the artifact locally
 
 ```bash
 git clone https://github.com/melinastafford15/birmingham-regional-service-navigator.git
 cd birmingham-regional-service-navigator
-git checkout docs/product-submit
 npm install
 npm run dev
 ```
@@ -200,10 +200,9 @@ ANTHROPIC_WORKSPACE_ID=
 
 Without an Anthropic API key, deterministic keyword classification is used.
 
-Verification commands available on the matching branch:
+Verification commands:
 
 ```bash
 npm run lint
-npm run typecheck
 npm run build
 ```
