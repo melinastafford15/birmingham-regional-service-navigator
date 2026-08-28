@@ -110,7 +110,12 @@ export async function classify(message: string): Promise<Classification> {
   if (!process.env.ANTHROPIC_API_KEY) return classifyByKeyword(message)
 
   try {
-    const client = new Anthropic()
+    // Identity-linked API keys must name the workspace the request acts in.
+    // Harmless to omit for ordinary keys.
+    const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID
+    const client = new Anthropic(
+      workspaceId ? { defaultHeaders: { 'anthropic-workspace-id': workspaceId } } : {},
+    )
     const response = await client.messages.parse({
       model: 'claude-opus-5',
       max_tokens: 4000,
