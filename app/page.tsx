@@ -1,69 +1,132 @@
-import Image from "next/image";
+'use client'
+
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { IssueForm, type FormErrors } from '@/app/components/handoff/IssueForm'
+import { HandoffCard } from '@/app/components/handoff/HandoffCard'
+import { StatusRegion } from '@/app/components/handoff/StatusRegion'
+import { EmptyStatePanel, ErrorPanel, OutOfScopePanel, UnknownJurisdictionPanel } from '@/app/components/handoff/OutcomePanels'
+import { SYNTHETIC_LOCATIONS } from '@/app/lib/handoff-fixtures'
+import { getApiMode, submitRoute } from '@/app/lib/handoff-client'
+import type { RouteOutcome } from '@/app/lib/handoff-contract'
 
 export default function Home() {
+  const [message, setMessage] = useState('')
+  const [locationId, setLocationId] = useState<string | null>(null)
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [outcome, setOutcome] = useState<RouteOutcome | null>(null)
+  const [statusMessage, setStatusMessage] = useState('')
+  const [lastMode, setLastMode] = useState<'mock' | 'live' | null>(null)
+  const resultHeadingRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (outcome && !submitting) {
+      resultHeadingRef.current?.focus()
+    }
+  }, [outcome, submitting])
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (submitting) return
+
+    const nextErrors: FormErrors = {}
+    if (!message.trim()) {
+      nextErrors.message = 'Describe the problem before continuing.'
+    }
+    if (!locationId) {
+      nextErrors.location = 'Choose one of the three synthetic demo locations.'
+    }
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) {
+      setStatusMessage('There is a problem with your entry. See the messages below.')
+      return
+    }
+
+    const location = SYNTHETIC_LOCATIONS.find((loc) => loc.id === locationId)
+    if (!location) return
+
+    const mode = getApiMode()
+    setSubmitting(true)
+    setStatusMessage('Finding the likely place to start…')
+    setOutcome(null)
+    setLastMode(mode)
+
+    const result = await submitRoute({
+      message,
+      syntheticLocationId: location.id,
+      jurisdictionHint: location.jurisdictionHint,
+      mode,
+    })
+
+    setOutcome(result)
+    setSubmitting(false)
+    setStatusMessage(
+      result.kind === 'ok'
+        ? 'Result ready.'
+        : result.kind === 'error'
+          ? 'Something went wrong.'
+          : 'This request is outside what the prototype currently supports.',
+    )
+  }
+
+  function handleRetry() {
+    setOutcome(null)
+    setStatusMessage('')
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6">
+      <header className="flex flex-col gap-3">
+        <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl">
+          CivicRoute BHM — find the likely place to start
+        </h1>
+        <p className="text-base text-zinc-700">
+          Describe a public right-of-way problem and this tool will suggest which office
+          most likely handles it, with its confidence and its source.
+        </p>
+        <div className="rounded-lg border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
+          <strong>This is a prototype.</strong> It uses synthetic example locations and
+          example office data only. It does not submit a service request to any real
+          agency, and it does not collect a real address, name, phone number, or email.
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="w-fit rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600">
+          Demo mode — showing example responses
         </div>
-      </main>
+      </header>
+
+      <StatusRegion message={statusMessage} />
+
+      {!outcome && !submitting && <EmptyStatePanel />}
+
+      <IssueForm
+        message={message}
+        onMessageChange={setMessage}
+        locationId={locationId}
+        onLocationChange={setLocationId}
+        errors={errors}
+        submitting={submitting}
+        onSubmit={handleSubmit}
+      />
+
+      {submitting && (
+        <p className="text-base font-medium text-zinc-700">Finding the likely place to start…</p>
+      )}
+
+      {outcome && !submitting && (
+        <div ref={resultHeadingRef} tabIndex={-1}>
+          {lastMode === 'live' && (
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Served by the live API
+            </p>
+          )}
+          {outcome.kind === 'ok' && <HandoffCard data={outcome.data} />}
+          {outcome.kind === 'out_of_scope' && <OutOfScopePanel supportedIssueTypes={outcome.supportedIssueTypes} />}
+          {outcome.kind === 'unknown_jurisdiction' && (
+            <UnknownJurisdictionPanel supportedJurisdictions={outcome.supportedJurisdictions} />
+          )}
+          {outcome.kind === 'error' && <ErrorPanel message={outcome.message} onRetry={handleRetry} />}
+        </div>
+      )}
     </div>
-  );
+  )
 }
