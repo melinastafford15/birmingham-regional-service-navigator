@@ -6,11 +6,10 @@ CivicRoute BHM is a Birmingham-region municipal service navigator built for the 
 
 - **Working public demo:** [https://birmingham-regional-service.vercel.app/](https://birmingham-regional-service.vercel.app/)
 - **Matching source branch:** [`docs/product-submit`](https://github.com/melinastafford15/birmingham-regional-service-navigator/tree/docs/product-submit)
-- **Integration pull request:** [PR #1](https://github.com/melinastafford15/birmingham-regional-service-navigator/pull/1)
 - **Demo walkthrough:** [`docs/demo-script.md`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/docs/demo-script.md)
 - **Submission copy:** [`docs/submission.md`](https://github.com/melinastafford15/birmingham-regional-service-navigator/blob/docs/product-submit/docs/submission.md)
 
-> **Review note:** The public Vercel deployment corresponds to the `docs/product-submit` branch and PR #1. The default `main` branch contains broader experimental routing and SMS work that is not part of the judged public demo. Use the working demo and matching source branch above when reviewing the artifact.
+> **Review note:** The public Vercel deployment corresponds to the `docs/product-submit` branch. The default `main` branch contains broader experimental routing and SMS work that is not part of the judged public demo. Use the working demo and matching source branch above when reviewing the artifact.
 
 Because the artifact is available through a working public link, the event rules do not require a separate 60-second demo video.
 
