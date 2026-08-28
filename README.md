@@ -74,6 +74,15 @@ The three demonstration jurisdictions are:
 
 The judged web interface does **not** accept a real address, name, phone number, or email. It does not submit, track, or update a service request.
 
+### Additional implemented paths on `main`
+
+The repository also contains two broader, optional interfaces described in [`docs/API.md`](docs/API.md):
+
+- **Direct-address API:** `POST /api/route-request` accepts a plain-language problem and an optional address, resolves the jurisdiction through the Census geocoder, and returns the backend routing contract. The public browser demo does not call this endpoint.
+- **Sendblue SMS/iMessage:** `POST /api/sms` accepts a Sendblue inbound webhook, separates the problem from its location with Claude or a heuristic fallback, runs the same classification/geocoding/retrieval pipeline, and can reply through Sendblue when credentials are configured. Without credentials, it returns a preview and sends nothing.
+
+These paths broaden the implementation beyond the four-case browser demo. The backend taxonomy also includes traffic signals, street lights, illegal dumping, and abandoned vehicles in addition to the four public-demo issue types. Neither optional path submits a government service request or contacts an agency. The SMS sender number is used only to address the reply and is not intentionally stored or logged.
+
 ## Data and evidence sources
 
 The current demonstration uses synthetic data only.
@@ -92,14 +101,16 @@ The web interface sends only a frozen synthetic location ID. The server maps tha
 ## Architecture and approach
 
 ```text
-Resident web interface
+Resident web interface          Direct client             Sendblue webhook
+        |                            |                            |
+        | synthetic location ID     | problem + address          | text + sender
+        v                            v                            v
+POST /api/route          POST /api/route-request          POST /api/sms
+        |                            |                            |
+        +----------------------------+----------------------------+
         |
-        | message + synthetic location ID
         v
-POST /api/route
-        |
-        v
-Synthetic-location adapter
+Input parsing + jurisdiction resolution
         |
         v
 Claude or keyword issue classification
@@ -123,9 +134,13 @@ Important demo files:
 |---|---|
 | [`app/page.tsx`](app/page.tsx) | Accessible resident-facing web interface |
 | [`app/api/route/route.ts`](app/api/route/route.ts) | Synthetic-location adapter used by the web interface |
+| [`app/api/route-request/route.ts`](app/api/route-request/route.ts) | Direct-address backend contract |
+| [`app/api/sms/route.ts`](app/api/sms/route.ts) | Optional Sendblue inbound webhook and reply orchestration |
 | [`app/lib/handoff-contract.ts`](app/lib/handoff-contract.ts) | Resident-facing handoff contract and safety disclaimer |
 | [`lib/classify.ts`](lib/classify.ts) | Claude-backed classification with keyword fallback |
-| [`lib/geocode.ts`](lib/geocode.ts) | Jurisdiction resolution for the four server-side example addresses |
+| [`lib/geocode.ts`](lib/geocode.ts) | Census jurisdiction resolution for synthetic and optional direct-address inputs |
+| [`lib/sms-parse.ts`](lib/sms-parse.ts) | Claude-backed SMS problem/location parsing with heuristic fallback |
+| [`lib/sendblue.ts`](lib/sendblue.ts) | Credential-gated outbound Sendblue reply adapter |
 | [`lib/repositories/index.ts`](lib/repositories/index.ts) | Selects the seed repository or optional Supabase-plus-seed repository |
 | [`lib/repositories/json-repository.ts`](lib/repositories/json-repository.ts) | Structured seed-record retrieval |
 | [`lib/repositories/supabase-repository.ts`](lib/repositories/supabase-repository.ts) | Optional centralized Supabase evidence adapter |
@@ -139,7 +154,7 @@ The synthetic JSON seed is the no-configuration evidence layer. When the three `
 Claude was used in two ways:
 
 1. **Building the project:** Claude Code assisted with implementation, contract design, debugging, integration, documentation, and release verification.
-2. **Inside the artifact:** When `ANTHROPIC_API_KEY` is configured, Claude classifies the resident’s description into a supported issue type. If the key is absent or the model request fails, deterministic keyword rules keep the demo working.
+2. **Inside the artifact:** When `ANTHROPIC_API_KEY` is configured, Claude classifies the resident’s description into a supported issue type. For the optional SMS path, Claude also separates the problem description from the location. If the key is absent or a model request fails, deterministic keyword and parsing rules keep both paths working.
 
 Claude does **not** choose the responsible office or invent contact information. Office names, channels, source links, and checked dates come from the structured evidence repository.
 
@@ -150,6 +165,7 @@ Claude does **not** choose the responsible office or invent contact information.
 - Every routed response shows its confidence, evidence, caveats, and synthetic status.
 - The application never files a request or makes a legal determination.
 - A public employee at the receiving office must confirm responsibility before anyone relies on the result.
+- The optional SMS path replies only to the resident; it does not message a government office. Its sender number is used for delivery and is not intentionally persisted or logged.
 
 ## What works today
 
@@ -157,6 +173,9 @@ Claude does **not** choose the responsible office or invent contact information.
 - The browser interface builds and runs from the public `main` branch without an Anthropic API key.
 - Three synthetic demonstration jurisdictions and four frozen example locations route through the application API.
 - Four public right-of-way issue types are supported.
+- The direct-address `/api/route-request` path supports the broader backend service taxonomy and Census jurisdiction resolution.
+- The `/api/sms` webhook composes a safe preview without credentials and can send a resident reply when Sendblue is configured.
+- Optional Supabase configuration adds a centralized evidence source behind the same repository interface.
 - Results display jurisdiction, confidence, reasoning, conflicts, contact information, sources, checked dates, and human-confirmation instructions.
 - Synthetic results display a visible **Example data** label.
 - Emergency language returns 911 guidance.
@@ -170,10 +189,13 @@ Claude does **not** choose the responsible office or invent contact information.
 - All 30 seed evidence records are synthetic placeholders.
 - Phone numbers, source links, office descriptions, and checked dates are examples.
 - The project has not been approved or endorsed by Birmingham, Jefferson County, Homewood, or another government organization.
-- The evidence repository is a JSON file rather than a deployed database.
+- The public demo falls back to the synthetic JSON seed; the optional Supabase source depends on deployment configuration and has not been presented as verified government data.
 - Retrieval is structured lookup rather than a vector or embedding-based RAG system.
 - Only four issue types and three jurisdictions are available through the public interface.
 - The gap register is in memory and resets on redeploy.
+- The direct-address and SMS paths can receive a location, and SMS necessarily receives a sender number. They have not completed a production privacy, consent, retention, abuse-prevention, or security review and are not part of the public browser demo.
+- Gap entries retain the submitted problem text in memory and `GET /api/gaps` has no authentication. That diagnostic endpoint is not suitable for production as written.
+- The browser adapter and direct-address endpoint expose two response contracts. They share the backend pipeline, but contract consolidation remains future work.
 - No measured routing-accuracy evaluation or automated end-to-end browser suite exists yet.
 - The result identifies a likely starting point; it does not determine legal responsibility.
 - The application is not a replacement for 911 or an official government service.
@@ -198,9 +220,15 @@ Optional environment variables:
 ```dotenv
 ANTHROPIC_API_KEY=
 ANTHROPIC_WORKSPACE_ID=
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_OFFICES_TABLE=
+SENDBLUE_API_KEY_ID=
+SENDBLUE_API_SECRET_KEY=
+SENDBLUE_FROM_NUMBER=
 ```
 
-Without an Anthropic API key, deterministic keyword classification is used.
+Without an Anthropic API key, deterministic keyword classification and SMS parsing are used. Without all three Supabase variables, retrieval uses the synthetic seed alone. Without all three Sendblue variables, the SMS endpoint sends nothing and returns a preview response.
 
 Verification commands:
 
