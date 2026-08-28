@@ -95,7 +95,7 @@ Every required field visible. These are eligibility requirements, not styling pr
 ### 7. Release gate
 
 - [x] `npm run build && npm run lint && npm run typecheck` pass (build must precede typecheck; see README)
-- [ ] README setup instructions verified against that clean clone
+- [x] README setup instructions verified in a clean detached worktree with `npm ci`
 - [x] All three demo scenarios run end to end through the browser UI and application API
 - [x] Every current limitation documented and none overstated
 - [x] Submission text links the repo and states MVP, impact, safety boundaries, roadmap
@@ -171,6 +171,7 @@ deterministic-fallback path.
 | Browser UI, 3 jurisdictions | → all three routed cards rendered from the live application API |
 | Browser UI, emergency / unsupported | → dedicated safe outcome panels, with no invented office |
 | Mobile browser, 390 × 844 | → routed card remains readable and ordered correctly |
+| Clean checkout | → `npm ci`, build, lint, and typecheck all pass; npm reports 0 vulnerabilities |
 
 ### One fix this testing surfaced
 
@@ -196,8 +197,8 @@ Homewood tree scenario routes correctly.
 | API | 🟢 Valid frozen response on all three cases + deterministic fallback verified with no API key |
 | UI | 🟢 Live browser flow consumes the frozen API contract; routed, emergency, and not-covered outcomes verified |
 | Safety | 🟢 Synthetic-only enforced, no live submission, no secret tracked, all numbers `555-01xx`, "likely responsible entity" wording throughout |
-| Release | 🟡 build / lint / typecheck and manual end-to-end browser checks green; clean-clone rehearsal and automated tests remain |
+| Release | 🟢 Clean-checkout install / build / lint / typecheck and manual end-to-end browser checks green; no automated browser suite exists yet |
 
-**Critical path: verify the placeholder office/source rows and rehearse from a clean
-clone.** The application itself now runs end to end, and `docs/submission.md` is ready to
-paste into the final submission issue.
+**Critical path: verify the placeholder office/source rows.** The application itself
+now runs end to end, the clean-checkout rehearsal is green, and `docs/submission.md` is
+ready to paste into the final submission issue.
