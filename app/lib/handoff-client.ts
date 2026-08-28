@@ -4,14 +4,12 @@ import type { JurisdictionHint, RouteOutcome } from './handoff-contract'
 export type ApiMode = 'mock' | 'live'
 
 /**
- * Read-only for now: `?api=live` lets a developer exercise the real fetch path (and,
- * today, its honest failure — POST /api/route does not exist yet on this backend; the
- * committed contract is POST /api/route-request with a different shape, see
- * handoff-contract.ts). Residents never see or need this toggle; it defaults to mock.
+ * Defaults to the live backend (POST /api/route). Append `?api=mock` to fall back to
+ * the local fixture responses — useful for UI work without a running API or API key.
  */
 export function getApiMode(): ApiMode {
-  if (typeof window === 'undefined') return 'mock'
-  return new URLSearchParams(window.location.search).get('api') === 'live' ? 'live' : 'mock'
+  if (typeof window === 'undefined') return 'live'
+  return new URLSearchParams(window.location.search).get('api') === 'mock' ? 'mock' : 'live'
 }
 
 interface SubmitParams {

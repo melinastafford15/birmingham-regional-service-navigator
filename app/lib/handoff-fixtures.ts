@@ -37,6 +37,14 @@ export const SYNTHETIC_LOCATIONS: SyntheticLocation[] = [
     description: 'A storm drain at a corner backs up and floods the street during heavy rain.',
     exampleMessage: 'The storm drain on the corner is blocked and water backs up every time it rains',
   },
+  {
+    id: 'BHM-DEMO-04',
+    jurisdictionHint: 'birmingham-al',
+    label: 'A "Birmingham" mailing address (synthetic)',
+    description:
+      'A mailing address that reads Birmingham but sits in a different city and a different county. Shows why the envelope does not decide who is responsible.',
+    exampleMessage: 'The storm drain on the corner is blocked and water backs up every time it rains',
+  },
 ]
 
 function classifyIssueType(message: string): IssueType | null {

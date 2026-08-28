@@ -47,6 +47,7 @@ const KEYWORD_RULES: Array<[ServiceType, RegExp]> = [
   ['traffic_signal', /\b(traffic (light|signal)|crosswalk|walk signal|stop ?light|signal (is )?out)\b/i],
   ['street_light', /\b(street ?light|lamp ?post|light pole|dark street)\b/i],
   ['abandoned_vehicle', /\b(abandoned (car|vehicle)|junk car|derelict vehicle|car has been parked)\b/i],
+  ['tree_debris', /\b(tree|limb|branch|brush|storm debris)\b/i],
   ['illegal_dumping', /\b(dumping|dumped|trash pile|debris|litter|mattress|tires? (dumped|left))\b/i],
   ['sidewalk', /\b(side ?walk|curb|curb ramp|walkway)\b/i],
   ['pothole_street', /\b(pot ?hole|road surface|pavement|street (is )?(broken|crumbling)|asphalt)\b/i],
